@@ -1,4 +1,4 @@
-# The Revolutionary Name Generator Project
+# The [Revolutionary Name Generator](https://milanschroeder.shinyapps.io/RandomNames/ "Go to app") Project
 
 *Idea: Simone Raudszus & The Mittwochsstammtisch*
 
