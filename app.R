@@ -15,10 +15,10 @@ library(rio)
 
 options(scipen = 999)
 
-# frequency of surname frequencies: https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf
-US_inhibitants_2010 <- 294979229 # just use 2010 value for now
-US_rare_surnames <- tribble(
-  ~ name,                               ~ count_names, ~ count_people, ~ occurrences_min, ~ occurrences_max,
+# frequency of surname frequencies: https://www2.census.gov/topics/genealogy
+US_inhibitants_2010 <- 294979229
+US_rare_surnames_2010 <- tribble(
+  ~ name,                           ~ count_names, ~ count_people, ~ occurrences_min, ~ occurrences_max,
   "[random_rare_surname (50-99 occurrences)]", 114079,        7939724,     50,               99,
   "[random_rare_surname (25-49 occurrences)]", 454216,        6182636,     25,               49,
   "[random_rare_surname (10-24 occurrences)]", 354912,        5448514,     10,               24,
@@ -26,6 +26,18 @@ US_rare_surnames <- tribble(
   "[random_rare_surname (2-4 occurrences)]",   1165587,       3079711,     2,                4,
   "[random_rare_surname (1 occurrence)]",      3899864,       3899864,     1,                1
 ) %>% mutate(prob = count_people / US_inhibitants_2010)
+
+US_inhibitants_2000 <- 269762087
+US_rare_surnames_2000 <- tribble(
+  ~ name,                           ~ count_names, ~ count_people, ~ occurrences_min, ~ occurrences_max,
+  "[random_rare_surname (50-99 occurrences)]", 105609,        7358924,     50,               99,
+  "[random_rare_surname (25-49 occurrences)]", 166059,        5772510,     25,               49,
+  "[random_rare_surname (10-24 occurrences)]", 331518,        5092320,     10,               24,
+  "[random_rare_surname (5-9 occurrences)]",   395600,        2568209,     5,                9,
+  "[random_rare_surname (2-4 occurrences)]",   1056992,       2808085,     2,                4,
+  "[random_rare_surname (1 occurrence)]",      4040966,       4040966,     1,                1
+) %>% mutate(prob = count_people / US_inhibitants_2000)
+
 # what distribution to assume?
 
 
@@ -126,7 +138,7 @@ ui <- fluidPage(
     # Application title
     titlePanel("The Revolutionary Name Generator"),
 
-    # Sidebar with a slider input for number of bins 
+    # Sidebar:
     sidebarLayout(
         sidebarPanel(
             sliderInput("year",
@@ -149,14 +161,17 @@ ui <- fluidPage(
                         ),
             textInput("name", 
                       label = "Name Lookup",
-                      placeholder = "name")
+                      placeholder = "name"),
+            
+            htmlOutput("version")
         ),
 
-        # Show a plot of the generated distribution
+        # Output:
         mainPanel(
            htmlOutput("generate"),
            htmlOutput("lookup")
         )
+          
     ),
     tags$head(tags$style("#generate{color: violet;
                                  font-size: 20px;
@@ -165,13 +180,24 @@ ui <- fluidPage(
               tags$head(tags$style("#lookup{color: purple;
                                  font-size: 20px;
                                  font-style: italic;
-                                 }"
-    )
-    )
+                                 }")),
+    tags$head(tags$style("#version{color: lightgrey;
+                                 font-size: 15px;
+                                 font-style: italic;
+                                 }"))
 )
 
 # Define server logic required ######################
 server <- function(input, output, session) {
+  
+  output$version <- renderText({'
+                                <footer> 
+                                  <a href="https://github.com/milanschroeder/RandomNames">
+                                    <img src="https://tse4.mm.bing.net/th?id=OIP.Q7V27pjgyelBqH0iwvAUEAD6D6&pid=Api" alt="View on GitHub" height="40px" width="40px">
+                                  </a>
+                                  Version 1.0.1 (2023/04/05)
+                                </footer>
+                              '})
   
   get_data_givennames <- reactive({
     
@@ -219,13 +245,20 @@ server <- function(input, output, session) {
   })
   
   
+  
   # surnames 2010 (occuring > 99 times):
   get_data_surnames <- reactive({
-    if (input$country == "US" # & input$year > 2009
-    ) {
-      # data source: https://www2.census.gov/topics/genealogy/2010surnames/names.zip
+    if (input$country == "US") {
+      # data source: https://www2.census.gov/topics/genealogy
      
-       US_surnames <- rio::import("./US_surnames2010/Names_2010Census.csv") %>% 
+      surname_source <- case_when(input$year > 2009 ~ "./US_surnames/Names_2010Census.csv",
+                                  input$year < 2010 ~ "./US_surnames/Names_2000Census.csv"
+                                  )
+      US_rare_surnames <- case_when(input$year > 2009 ~ US_rare_surnames_2010,
+                                    input$year < 2010 ~ US_rare_surnames_2000
+                                    )
+      
+       US_surnames <- rio::import(surname_source) %>% 
         mutate(name = stringr::str_to_title(name),
                prob = count / US_inhibitants_2010,
                occurrences_min = count,

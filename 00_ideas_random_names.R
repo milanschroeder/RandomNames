@@ -1,4 +1,16 @@
-# Name Distribution in Germany 2020 (source:  https://gfds.de/ausfuehrliche-auswertung-vornamen-2021/)
+# Name Distribution data: 
+  # in Germany 2020 (source:  https://gfds.de/ausfuehrliche-auswertung-vornamen-2021/)
+    # by: (Nord/Süd/Ost/West), gender, erst/folgename
+    # Schreibweisen kombiniert
+  # Nachnamen (1995): 
+    # https://gfds.de/vornamen/familiennamen/ / Konrad Kunze: »dtv-Atlas Namenkunde. Vor- und Familiennamen im deutschen Sprachgebiet.« München: Deutscher Taschenbuch Verlag 1999. Zusammengestellt auf Grundlage von 28.448.352 Einträgen in Telefonverzeichnissen aus dem Jahr 1995.
+
+
+  # austria: http://www.statistik.gv.at/web_de/statistiken/menschen_und_gesellschaft/bevoelkerung/geborene/vornamen/index.html
+  # switzerland: https://www.bfs.admin.ch/bfs/de/home/statistiken/bevoelkerung/geburten-todesfaelle/vornamen-neugeborene.html
+  # lichtenstein: https://www.llv.li/inhalt/11334/amtsstellen/vornamenstatistik
+
+
 library(tidyverse)
 library(magrittr)
 
@@ -44,8 +56,8 @@ US_givennames %<>% bind_rows(., coverage %>% select(year, sex, name, n = rare_na
 
 # lastnames 2010 (occuring > 99 times):
   # frequency of surname frequencies: https://www2.census.gov/topics/genealogy/2010surnames/surnames.pdf
-US_inhibitants <- 294979229
-US_rare_surnames <- tribble(
+US_inhibitants_2010 <- 294979229
+US_rare_surnames_2010 <- tribble(
   ~ name,                           ~ count_names, ~ count_people, ~ occurences_min, ~ occurences_max,
   "[random_rare_surname (50-99 occurences)]", 114079,        7939724,     50,               99,
   "[random_rare_surname (25-49 occurences)]", 454216,        6182636,     25,               49,
@@ -53,11 +65,27 @@ US_rare_surnames <- tribble(
   "[random_rare_surname (5-9 occurences)]",   424454,        2761552,     5,               9,
   "[random_rare_surname (2-4 occurences)]",   1165587,       3079711,     2,                4,
   "[random_rare_surname (1 occurence)]",      3899864,       3899864,     1,                1
-) %>% mutate(prob = count_people / US_inhibitants)
+) %>% mutate(prob = count_people / US_inhibitants_2010)
+
+US_inhibitants_2000 <- 269762087
+US_rare_surnames_2000 <- tribble(
+  ~ name,                           ~ count_names, ~ count_people, ~ occurences_min, ~ occurences_max,
+  "[random_rare_surname (50-99 occurences)]", 105609,        7358924,     50,               99,
+  "[random_rare_surname (25-49 occurences)]", 166059,        5772510,     25,               49,
+  "[random_rare_surname (10-24 occurences)]", 331518,        5092320,     10,               24,
+  "[random_rare_surname (5-9 occurences)]",   395600,        2568209,     5,                9,
+  "[random_rare_surname (2-4 occurences)]",   1056992,       2808085,     2,                4,
+  "[random_rare_surname (1 occurence)]",      4040966,       4040966,     1,                1
+) %>% mutate(prob = count_people / US_inhibitants_2000)
+
+# More work & data needed here:
+US_rare_surnames_1990 <- read.table("https://www2.census.gov/topics/genealogy/1990surnames/dist.all.last", 
+                                    col.names = c("name", "prob_perc", "cum_prob_perc", "rank")) 
+
 # what distribution to assume?
 
 # data source: https://www2.census.gov/topics/genealogy/2010surnames/names.zip
-US_surnames <- rio::import("./US_surnames2010/Names_2010Census.csv") %>% 
+US_surnames <- rio::import("./US_surnames/Names_2010Census.csv") %>% 
   mutate(name = stringr::str_to_title(name),
          prob = count / US_inhibitants) %>% 
   select(name, count, prob) %>%             # ignoring ethnical differences

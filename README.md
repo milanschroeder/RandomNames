@@ -22,7 +22,9 @@ Of course, you can also look up how likely a specific name will be after the imp
 
 #### version notes/limitations:
 
-**1.0** Release version
+**1.0** Release version (2023-04-03)
+
+Currently only supports data for the United States of America (US).
 
 Currently utilizes only given name data for persons born in the US between 1880 and 2017.
 
@@ -34,10 +36,12 @@ Currently only supports surnames with 100 or more appearances in the US in that 
 
 Currently assumes number of births before 1909 to equal the number of births in 1909.
 
-Currently only supports data for the United States of America (US).
-
 Currently only supports one given and surname, respectively.
 
 Currently always assigns both given and surname.
 
 Currently assumes uniform distribution of name frequencies for frequency cluster of rare names.
+
+**1.0.1** (2023-04-05)
+
+Now utilizes surname data from US census 2000 (for years before 2009)
